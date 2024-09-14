@@ -14,7 +14,7 @@ import os
 class Query_Data_From_Postgresql():
     
     def __init__(self, dbname, user, pw, host, port):
-        # 数据库连接基本信息
+        # init with db info
         self.dbname = dbname
         self.user = user
         self.pw = pw
@@ -28,7 +28,7 @@ class Query_Data_From_Postgresql():
         return: DataFrame
         """
         
-        # 建立数据库连接
+        # build DB connection
         conn = psycopg2.connect(database = self.dbname, 
                                 user = self.user, 
                                 password = self.pw,
@@ -38,18 +38,21 @@ class Query_Data_From_Postgresql():
         sql = sql_str
         cur.execute(sql)
         
-        #获取数据并将结果转换成dataframe
+        # query data and convert to dataframe
         df = pd.DataFrame(cur.fetchall()) 
-        # 获取列名
+        
+        # get column names
         colnames = [t[0] for t in cur.description]
         df.columns = colnames
         cur.close()
         conn.close()
+        
         return(df)
 
 
 if __name__ == '__main__':
     
+    # NOTE: this .env file is not uploaded because it contains sensitive information
     load_dotenv('pg_conn.env')
     
     DBNAME = os.getenv('DBNAME')

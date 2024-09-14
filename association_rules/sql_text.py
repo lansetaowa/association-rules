@@ -5,7 +5,7 @@ Created on Fri Sep 13 12:21:24 2024
 @author: elisa
 """
 
-# 从数据库中获取订单数据
+# query sales data and product category
 receipt_sql = '''
         with tab1 as(
         	select t1.receipt_id,

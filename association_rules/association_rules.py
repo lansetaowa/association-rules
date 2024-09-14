@@ -15,22 +15,21 @@ from mlxtend.frequent_patterns import apriori
 from mlxtend.frequent_patterns import association_rules
 
 
-# 处理相关数据，调整数据格式为购物篮
+# process data and convert it to basket format
 def process_data(data):
     '''
-    data: 订单或浏览数据集
-    return: 购物篮数据，list
+    data: sales data or activity data
+    return: basket data，list
     
     '''
-    # 剔除订单中商品数量为1个的订单
+    # remove orders with only one item
     receipt_cn = pd.value_counts(data.receipt_id)
     receipt_cn_use = receipt_cn.loc[receipt_cn > 1]
 
-    # 基于receipt_id生成购物篮数据
+    # generate basket data based on unique receipt_id
     receipt_id_uni = receipt_cn_use.index
     receipt_num = len(receipt_id_uni)
     
-    # 将数据格式整理为购物篮
     colnames = data.columns
     basket = [] * receipt_num
     for i in range(receipt_num):
@@ -38,38 +37,37 @@ def process_data(data):
         list_temp = list(set(df_temp[colnames[-1]]))
         basket.append(list_temp)
         
-    # 输出数据集
     return(basket)
 
 
-# 关联规则
+# association rules
 def asso_rule(basket_data, min_sup, min_conf):
     '''
-    basket_data : 购物篮数据集
-    min_sup : 最小支持度
-    min_conf : 最小置信度
-    Returns： 关联规则结果数据集
+    basket_data : basket data
+    min_sup : minimum support
+    min_conf : minimum confidence
+    Returns： dataframe with association rules results
 
     '''
- 
-    # 将购物篮数据整理成apriori算法所需的数据格式
+
+    # transform basket data into required format for apriori algorithm
     te = TransactionEncoder()
     df_tf = te.fit_transform(basket_data)
     df = pd.DataFrame(df_tf, columns = te.columns_)
     
-    # 计算频繁项集
+    # calculate frequent item sets
     freq_itemsets = apriori(df, min_support = min_sup, use_colnames = True)
     freq_itemsets.sort_values(by = 'support', ascending = False, inplace = True)
 
-    # 计算关联规则
+    # calculate association rules
     df_result = association_rules(freq_itemsets, 
                                   metric = 'confidence', 
                                   min_threshold = min_conf)
      
-    #关联规则可以提升度排序
+    # sort association rules by lift
     df_result.sort_values(by='lift',ascending=False,inplace=True)    
     
-    # 规则是：antecedents->consequents
+    # rule： antecedents->consequents
     return(df_result)
 
 
